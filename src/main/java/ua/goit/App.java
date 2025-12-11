@@ -15,5 +15,6 @@ public class App {
         System.out.println(clientService.listAll());
         clientService.deleteById(7);
         System.out.println(clientService.listAll());
+        clientService.create("Taras".repeat(300));
     }
 }

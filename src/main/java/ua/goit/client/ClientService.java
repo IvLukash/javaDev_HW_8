@@ -1,6 +1,7 @@
 package ua.goit.client;
 
 import ua.goit.connection.ConnectionFactory;
+import ua.goit.exception.NameLengthException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,6 +15,9 @@ public class ClientService {
     }
 
     public long create(String name) {
+        if (name.length() < 2 || name.length() > 1000) {
+            throw new NameLengthException("Name must be between 2 and 1000 characters");
+        }
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(
                      ClientConstants.INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -46,6 +50,9 @@ public class ClientService {
     }
 
     public void setName(long id, String name) {
+        if (name.length() < 2 || name.length() > 1000) {
+            throw new NameLengthException("Name must be between 2 and 1000 characters");
+        }
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(ClientConstants.UPDATE_BY_ID_SQL)) {
             st.setString(1, name);

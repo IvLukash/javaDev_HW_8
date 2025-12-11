@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.goit.connection.ConnectionFactory;
 import ua.goit.connection.JDBCConnectionFactory;
+import ua.goit.exception.NameLengthException;
 import ua.goit.test_database.TestDBInitializer;
 import ua.goit.test_database.TestDbCleaner;
 import ua.goit.test_settings.TestProps;
@@ -50,6 +51,14 @@ class ClientServiceTest {
     }
 
     @Test
+    void testThatNameLengthInCreateHandledCorrectly() {
+        List<String> names = List.of("", "G", "George".repeat(300));
+        for (String name : names) {
+            assertThrows(NameLengthException.class, () -> service.create(name));
+        }
+    }
+
+    @Test
     void getByIdTest() {
         String expectedName = "Robert Malkolm";
         long id = service.create(expectedName);
@@ -66,6 +75,16 @@ class ClientServiceTest {
         service.setName(id, newName);
 
         assertEquals(newName, service.getById(id));
+    }
+
+    @Test
+    void testThatNameLengthInSetNameHandledCorrectly() {
+        List<String> names = List.of("", "G", "George".repeat(300));
+        String testName = "Ivan Lukash";
+        long id = service.create(testName);
+        for (String name : names) {
+            assertThrows(NameLengthException.class, () -> service.setName(id, name));
+        }
     }
 
     @Test
