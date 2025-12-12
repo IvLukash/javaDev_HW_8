@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.goit.connection.ConnectionFactory;
 import ua.goit.connection.JDBCConnectionFactory;
+import ua.goit.exception.InvalidIdException;
 import ua.goit.exception.NameLengthException;
 import ua.goit.test_database.TestDBInitializer;
 import ua.goit.test_database.TestDbCleaner;
@@ -31,7 +32,7 @@ class ClientServiceTest {
     }
 
     @Test
-    void createTest() {
+    void testCreate() throws NameLengthException {
         String name = "Ivan Lukash";
         long id = service.create(name);
 
@@ -51,7 +52,7 @@ class ClientServiceTest {
     }
 
     @Test
-    void testThatNameLengthInCreateHandledCorrectly() {
+    void testCreateWithInvalidName() {
         List<String> names = List.of("", "G", "George".repeat(300));
         for (String name : names) {
             assertThrows(NameLengthException.class, () -> service.create(name));
@@ -59,7 +60,7 @@ class ClientServiceTest {
     }
 
     @Test
-    void getByIdTest() {
+    void testGetById() throws NameLengthException, InvalidIdException {
         String expectedName = "Robert Malkolm";
         long id = service.create(expectedName);
         String actualName = service.getById(id);
@@ -68,7 +69,15 @@ class ClientServiceTest {
     }
 
     @Test
-    void setNameTest() {
+    void testGetByIdWithInvalidId() {
+        List<Long> ids = List.of(0L, -1L);
+        for (long id : ids) {
+            assertThrows(InvalidIdException.class, () -> service.getById(id));
+        }
+    }
+
+    @Test
+    void testSetName() throws NameLengthException, InvalidIdException {
         String name = "Ivan Lukash";
         long id = service.create(name);
         String newName = "Petro Savchenko";
@@ -78,17 +87,25 @@ class ClientServiceTest {
     }
 
     @Test
-    void testThatNameLengthInSetNameHandledCorrectly() {
-        List<String> names = List.of("", "G", "George".repeat(300));
-        String testName = "Ivan Lukash";
-        long id = service.create(testName);
-        for (String name : names) {
-            assertThrows(NameLengthException.class, () -> service.setName(id, name));
+    void testSetNameWithInvalidId() {
+        String newName = "Petro Savchenko";
+        List<Long> ids = List.of(0L, -1L);
+        for (long id : ids) {
+            assertThrows(InvalidIdException.class, () -> service.setName(id, newName));
         }
     }
 
     @Test
-    void deleteByIdTest() {
+    void testSetNameWithInvalidName() throws NameLengthException {
+        String name = "Ivan Lukash";
+        long id = service.create(name);
+        String newName = "Petro".repeat(300);
+
+        assertThrows(NameLengthException.class, () -> service.setName(id, newName));
+    }
+
+    @Test
+    void testDeleteById() throws NameLengthException, InvalidIdException {
         String name = "Ivan Lukash";
         long id = service.create(name);
         service.deleteById(id);
@@ -97,7 +114,15 @@ class ClientServiceTest {
     }
 
     @Test
-    void listAllTest() {
+    void testDeleteByIdWithInvalidId() {
+        List<Long> ids = List.of(0L, -1L);
+        for (long id : ids) {
+            assertThrows(InvalidIdException.class, () -> service.deleteById(id));
+        }
+    }
+
+    @Test
+    void testListAll() throws NameLengthException {
         List<Client> clients = new ArrayList<>();
         List<String> names = List.of("Ivan Lukash", "Petro Savchenko", "Roman Orest");
         for (String name : names) {

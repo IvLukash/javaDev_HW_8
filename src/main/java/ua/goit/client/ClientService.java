@@ -1,6 +1,7 @@
 package ua.goit.client;
 
 import ua.goit.connection.ConnectionFactory;
+import ua.goit.exception.InvalidIdException;
 import ua.goit.exception.NameLengthException;
 
 import java.sql.*;
@@ -20,10 +21,9 @@ public class ClientService {
         this.factory = factory;
     }
 
-    public long create(String name) {
-        if (name.length() < 2 || name.length() > 1000) {
-            throw new NameLengthException("Name must be between 2 and 1000 characters");
-        }
+    public long create(String name) throws NameLengthException {
+        checkName(name);
+
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(
                      INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -40,7 +40,9 @@ public class ClientService {
         }
     }
 
-    public String getById(long id) {
+    public String getById(long id) throws InvalidIdException {
+        checkId(id);
+
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(SELECT_BY_ID_SQL)) {
             st.setLong(1, id);
@@ -55,10 +57,10 @@ public class ClientService {
         return NO_SUCH_ELEMENT;
     }
 
-    public void setName(long id, String name) {
-        if (name.length() < 2 || name.length() > 1000) {
-            throw new NameLengthException("Name must be between 2 and 1000 characters");
-        }
+    public void setName(long id, String name) throws InvalidIdException, NameLengthException {
+        checkId(id);
+        checkName(name);
+
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(UPDATE_BY_ID_SQL)) {
             st.setString(1, name);
@@ -69,7 +71,9 @@ public class ClientService {
         }
     }
 
-    public void deleteById(long id) {
+    public void deleteById(long id) throws InvalidIdException {
+        checkId(id);
+
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(DELETE_BY_ID_SQL)) {
             st.setLong(1, id);
@@ -94,5 +98,17 @@ public class ClientService {
             throw new RuntimeException("Error executing get all clients", e);
         }
         return clients;
+    }
+
+    private void checkName(String name) throws NameLengthException {
+        if (name.length() < 2 || name.length() > 1000) {
+            throw new NameLengthException("Name must be between 2 and 1000 characters");
+        }
+    }
+
+    private void checkId(long id) throws InvalidIdException {
+        if (id <= 0) {
+            throw new InvalidIdException("ID must be greater than 0");
+        }
     }
 }
