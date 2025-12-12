@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientService {
+    public static final String INSERT_SQL = "INSERT INTO client (name) VALUES (?)";
+    public static final String SELECT_BY_ID_SQL = "SELECT name FROM client WHERE id = ?";
+    public static final String UPDATE_BY_ID_SQL = "UPDATE client SET name = ? WHERE id = ?";
+    public static final String DELETE_BY_ID_SQL = "DELETE FROM client WHERE id = ?";
+    public static final String SELECT_ALL_SQL = "SELECT id, name FROM client";
+    public static final String NO_SUCH_ELEMENT = "Record not found";
     private ConnectionFactory factory;
 
     public ClientService(ConnectionFactory factory) {
@@ -20,7 +26,7 @@ public class ClientService {
         }
         try (Connection connection = factory.createConnection();
              PreparedStatement st = connection.prepareStatement(
-                     ClientConstants.INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                     INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
             st.setString(1, name);
             st.executeUpdate();
             try (ResultSet keys = st.getGeneratedKeys()) {
@@ -36,7 +42,7 @@ public class ClientService {
 
     public String getById(long id) {
         try (Connection connection = factory.createConnection();
-             PreparedStatement st = connection.prepareStatement(ClientConstants.SELECT_BY_ID_SQL)) {
+             PreparedStatement st = connection.prepareStatement(SELECT_BY_ID_SQL)) {
             st.setLong(1, id);
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
@@ -46,7 +52,7 @@ public class ClientService {
         } catch (SQLException e) {
             throw new RuntimeException("Error executing get for id: " + id, e);
         }
-        return ClientConstants.NO_SUCH_ELEMENT;
+        return NO_SUCH_ELEMENT;
     }
 
     public void setName(long id, String name) {
@@ -54,7 +60,7 @@ public class ClientService {
             throw new NameLengthException("Name must be between 2 and 1000 characters");
         }
         try (Connection connection = factory.createConnection();
-             PreparedStatement st = connection.prepareStatement(ClientConstants.UPDATE_BY_ID_SQL)) {
+             PreparedStatement st = connection.prepareStatement(UPDATE_BY_ID_SQL)) {
             st.setString(1, name);
             st.setLong(2, id);
             st.executeUpdate();
@@ -65,7 +71,7 @@ public class ClientService {
 
     public void deleteById(long id) {
         try (Connection connection = factory.createConnection();
-             PreparedStatement st = connection.prepareStatement(ClientConstants.DELETE_BY_ID_SQL)) {
+             PreparedStatement st = connection.prepareStatement(DELETE_BY_ID_SQL)) {
             st.setLong(1, id);
             st.executeUpdate();
         } catch (SQLException e) {
@@ -76,7 +82,7 @@ public class ClientService {
     public List<Client> listAll() {
         List<Client> clients = new ArrayList<>();
         try (Connection connection = factory.createConnection();
-             PreparedStatement st = connection.prepareStatement(ClientConstants.SELECT_ALL_SQL);
+             PreparedStatement st = connection.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
                 Client client = new Client();
